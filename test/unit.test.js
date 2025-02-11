@@ -36,13 +36,13 @@ describe("HOCON Parser - Extended Tests", () => {
     const result = parseString(hocon, __dirname);
     expect(result.parent).toBeDefined();
     expect(result.parent.child).toBe("hello");
-    expect(result.parent.inner.foo).toBe("123");
+    expect(result.parent.inner.foo).toBe(123);
   });
 
   test("handles arrays", () => {
     const hocon = "numbers = [1, 2, 3]";
     const result = parseString(hocon, __dirname);
-    expect(result.numbers).toEqual(["1", "2", "3"]);
+    expect(result.numbers).toEqual([1, 2, 3]);
   });
 
   test("skips overriding array if it is [undefined]", () => {
@@ -63,7 +63,7 @@ describe("HOCON Parser - Extended Tests", () => {
       merged[k] = v;
     });
 
-    expect(merged.arr).toEqual(["1", "2", "3"]);
+    expect(merged.arr).toEqual([1, 2, 3]);
   });
 
   test("handles environment variable expansion (${?TEST_VAR})", () => {
@@ -104,7 +104,7 @@ describe("HOCON Parser - Extended Tests", () => {
   test("handles dotted keys to produce nested objects", () => {
     const hocon = `
       app.name = "MyApp"
-      app.version = 1.2
+      app.version = "1.2"
       app.inner.deep.key = "deepValue"
     `;
     const result = parseString(hocon, __dirname);
@@ -177,8 +177,8 @@ describe("HOCON Parser - Extended Tests", () => {
       }
     });
 
-    expect(merged.nested.a).toBe("1");
-    expect(merged.nested.b).toBe("99");
+    expect(merged.nested.a).toBe(1);
+    expect(merged.nested.b).toBe(99);
     expect(merged.nested.inner.x).toBe("X_OVERRIDE");
     expect(merged.nested.inner.y).toBe("new");
   });
@@ -193,7 +193,7 @@ describe("HOCON Parser - Extended Tests", () => {
     // Check nested object
     expect(config.database.host).toBe("localhost");
     // Check array from base.conf => [8080, 9090, 10000] by default
-    expect(config.server.ports).toContain("8080");
+    expect(config.server.ports).toContain(8080);
   });
 
   test("multiple includes chain", () => {
@@ -244,15 +244,15 @@ describe("HOCON Parser - Extended Tests", () => {
     process.env.APP_PORT = "9999";
     const baseFile = path.join(__dirname, ".", "config", "base.conf");
     const config = parseFile(baseFile);
-    expect(config.server.ports[0]).toBe("9999");
-    expect(config.server.ports[1]).toBe("9090");
-    expect(config.server.ports[2]).toBe("10000");
+    expect(config.server.ports[0]).toBe(9999);
+    expect(config.server.ports[1]).toBe(9090);
+    expect(config.server.ports[2]).toBe(10000);
   });
 
   test("skips array override if environment is not set", () => {
     const baseFile = path.join(__dirname, ".", "config", "base.conf");
     const config = parseFile(baseFile);
-    expect(config.server.ports).toEqual(["8080", "9090", "10000"]);
+    expect(config.server.ports).toEqual([8080, 9090, 10000]);
   });
 
   test("applies programmatic overrides last", () => {
@@ -292,6 +292,6 @@ describe("HOCON Parser - Extended Tests", () => {
     // overrides.conf => "ExampleApp-Overridden"
     expect(config.app.name).toBe("ExampleApp-Overridden");
     expect(config.database.host).toBe("localhost");
-    expect(config.server.ports).toEqual(["8080", "9090", "10000"]);
+    expect(config.server.ports).toEqual([8080, 9090, 10000]);
   });
 });

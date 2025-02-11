@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "DottedKeyApp",
-    "version": "3.14",
+    "version": 3.14,
     "info": {
       "author": "Jane Doe"
     }
