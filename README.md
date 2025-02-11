@@ -1,4 +1,3 @@
-```markdown
 # hocon-config
 
 [![CI Tests](https://github.com/miguelemosreverte/hocon-parser/actions/workflows/ci.yml/badge.svg)](https://github.com/miguelemosreverte/hocon-parser/actions)
