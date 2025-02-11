@@ -1,5 +1,5 @@
 {
-  "name": "@miguelemosreverte/hocon-config",
+  "name": "hocon-config",
   "version": "1.0.0",
   "description": "A HOCON parser for Node.js with environment expansions, partial array merges, programmatic overrides, and CLI runtime integration.",
   "main": "lib/hoconParser.js",
@@ -30,9 +30,6 @@
     "nodejs",
     "config-loader"
   ],
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "devDependencies": {
     "jest": "^29.0.0"
   }
