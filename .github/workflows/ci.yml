@@ -3,7 +3,6 @@ name: CI
 on:
   push:
     branches: ["main"]
-  # or use 'on: release: [created]' if you only want to publish on GitHub Releases.
 
 jobs:
   build-and-publish:
@@ -17,6 +16,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Configure npm
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
       - name: Install
         run: npm install
