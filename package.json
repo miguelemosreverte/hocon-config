@@ -1,0 +1,36 @@
+{
+  "name": "hocon-config",
+  "version": "1.0.0",
+  "description": "A HOCON parser for Node.js with environment expansions, partial array merges, programmatic overrides, and CLI runtime integration.",
+  "main": "lib/hoconParser.js",
+  "files": [
+    "lib/",
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/miguelemosreverte/hocon-parser.git"
+  },
+  "bugs": {
+    "url": "https://github.com/miguelemosreverte/hocon-parser/issues"
+  },
+  "homepage": "https://github.com/miguelemosreverte/hocon-parser#readme",
+  "author": "Miguel Lemos Reverte <miguelemosreverte@gmail.com> (https://github.com/miguelemosreverte)",
+  "license": "MIT",
+  "keywords": [
+    "hocon",
+    "config",
+    "parser",
+    "nodejs",
+    "config-loader"
+  ],
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}

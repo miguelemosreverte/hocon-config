@@ -1,0 +1,17 @@
+{
+  "app": {
+    "name": "parseFile",
+    "version": "2.0"
+  },
+  "database": {
+    "host": "localhost",
+    "port": "5432",
+    "password": "SECRET"
+  },
+  "server": {
+    "ports": [
+      "8080",
+      "9090"
+    ]
+  }
+}

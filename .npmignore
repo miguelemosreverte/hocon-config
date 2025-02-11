@@ -1,0 +1,7 @@
+# .npmignore
+test/
+scenarios/
+node_modules/
+.git/
+.github/
+*.log
