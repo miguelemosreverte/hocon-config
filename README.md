@@ -1,22 +1,21 @@
+```markdown
 # hocon-config
 
 [![CI Tests](https://github.com/miguelemosreverte/hocon-parser/actions/workflows/ci.yml/badge.svg)](https://github.com/miguelemosreverte/hocon-parser/actions)
 [![npm version](https://img.shields.io/npm/v/hocon-config.svg)](https://www.npmjs.com/package/hocon-config)
 [![License](https://img.shields.io/github/license/miguelemosreverte/hocon-parser.svg)](./LICENSE)
-[![npm downloads](https://img.shields.io/npm/dm/hocon-config.svg)](https://www.npmjs.com/package/hocon-config)
 
-A **robust** HOCON (Human-Optimized Config Object Notation) parser and loader for Node.js. We **fully** handle:
+A **powerful** HOCON (Human-Optimized Config Object Notation) parser and loader for Node.js. We **fully** handle:
 
 - **Environment variable substitutions** (`?ENV_VAR` / `${?ENV_VAR}`)
 - **Multiple-file includes** (`include "overrides.conf"`)
-- **Nested objects** & **arrays** (with dotted keys → nested objects)
-- **Merging** of keys (last definition always wins)
-- **Partial array overrides** (with `[undefined]` skip logic)
+- **Nested objects** & **arrays** (dotted keys → nested objects)
+- **Key merging** (last definition wins, partial array overrides, etc.)
 - **Programmatic overrides** for advanced usage
-- **Zero dependencies** – only Node built-ins
-- **Jest**-based tests to ensure quality
+- **Zero dependencies** – only Node’s built-ins
+- **Jest**-based tests ensuring quality
 
-No need to be humble: **`hocon-config`** is **powerful** yet straightforward, making your Node.js configuration a breeze.
+No need to be humble: **`hocon-config`** is **robust** yet straightforward, making your Node.js configuration a breeze.
 
 ---
 
@@ -26,7 +25,7 @@ No need to be humble: **`hocon-config`** is **powerful** yet straightforward, ma
 npm install hocon-config
 ```
 
-Require or import it in your Node.js code. That’s it!
+Once installed, you can simply import or require it in your Node.js code.
 
 ---
 
@@ -41,43 +40,117 @@ Require or import it in your Node.js code. That’s it!
    }
    ```
 
-2. **Parse it**:
+2. **Use the `parse`** function to load it:
    ```js
    const path = require('path');
-   const { parseFile } = require('hocon-config');
+   const { parse } = require('hocon-config');
 
    const filePath = path.join(__dirname, 'config', 'base.conf');
-   const config = parseFile(filePath);
+   const config = parse(filePath); // debug=false by default
 
    console.log(config);
-   // Output might look like:
+   // Might print:
    // {
    //   app: { name: 'ExampleApp' },
    //   database: { host: 'localhost', port: 5432 }
    // }
    ```
 
-3. **Done**. You now have a Node.js object ready for your app’s config needs.
+3. **Done!** You have a Node.js object ready to use.
 
 ---
 
-## Usage
+## 10 Scenarios (From Simple to Complex)
 
-### Parsing a File
+Below are **ten** progressively more advanced scenarios demonstrating the **`parse`** function. In each, we show how HOCON resolves merges, environment variables, includes, or overrides. By the end, you’ll see just how powerful `hocon-config` is for real-world configs!
 
-```js
-const path = require('path');
-const { parseFile } = require('hocon-config');
+### **Scenario 1**: A Simple Key-Value
 
-const config = parseFile(path.join(__dirname, 'config', 'base.conf'));
-console.log(config);
+**File**: `config/s1.conf`
+```hocon
+hello = "world"
 ```
 
-- **Includes**: If `base.conf` has `include "overrides.conf"`, it merges that file’s contents too.
-- **Merging**: If the same key is defined multiple times, the last definition “wins.”
+**Code**:
+```js
+const path = require('path');
+const { parse } = require('hocon-config');
 
-### Parsing a String
+const conf = parse(path.join(__dirname, 'config', 's1.conf'));
+console.log(conf); 
+// => { hello: 'world' }
+```
+Nothing fancy. Just key-value parsing.
 
+---
+
+### **Scenario 2**: A Nested Object
+
+**File**: `config/s2.conf`
+```hocon
+app {
+  name = "Scenario2"
+  nested { 
+    level = "deep"
+  }
+}
+```
+
+**Code**:
+```js
+const conf = parse(path.join(__dirname, 'config', 's2.conf'));
+console.log(conf);
+// => {
+//   app: {
+//     name: 'Scenario2',
+//     nested: { level: 'deep' }
+//   }
+// }
+```
+We see objects like `app.nested.level` become nested JS objects.
+
+---
+
+### **Scenario 3**: Arrays & Merging
+
+**File**: `config/s3.conf`
+```hocon
+server.ports = [8080, 9090]
+server.ports = [10000]
+```
+Because the **last definition** wins, the second line overwrites the array:
+
+```js
+const conf = parse(path.join(__dirname, 'config', 's3.conf'));
+console.log(conf);
+// => { server: { ports: [ '10000' ] } }
+```
+**Note**: If you want partial merging, you can do partial array overrides using environment expansions (`[${?VAR}]`) with skip logic.
+
+---
+
+### **Scenario 4**: Environment Variables
+
+**File**: `config/s4.conf`
+```hocon
+feature.flag = false
+feature.flag = ${?FEATURE_FLAG}
+```
+**Usage**:
+```js
+process.env.FEATURE_FLAG = 'true'; // or keep it unset
+const conf = parse(path.join(__dirname, 'config', 's4.conf'));
+console.log(conf);
+// => { feature: { flag: 'true' } } if ENV is set
+// => { feature: { flag: 'false' } } if ENV is not set
+```
+**`?ENV_VAR`** expansions let you override default values only if the environment variable is defined.
+
+---
+
+### **Scenario 5**: Parsing a String (no file)
+
+You can pass raw HOCON text to `parseString`:
 ```js
 const { parseString } = require('hocon-config');
 
@@ -87,96 +160,159 @@ const hoconData = `
 `;
 
 process.env.FEATURE_FLAG = 'true';
-
-const inlineConfig = parseString(hoconData, __dirname);
-console.log(inlineConfig);
+const conf = parseString(hoconData, __dirname);
+console.log(conf);
 // => { server: { port: '3000' }, feature: { enabled: 'true' } }
 ```
-
-The second argument (`__dirname`) is used for resolving any `include` statements within the string (relative paths).
-
-### Environment Variable Substitution
-
-A line like:
-```hocon
-someKey = ${?ENV_VAR}
-```
-- If `ENV_VAR` is set, `someKey` becomes that env value.
-- If not, the parser keeps the old value or remains `undefined` if none existed before.
-
-Example:
-```hocon
-someKey = "defaultValue"
-someKey = ${?UNDEFINED_VAR}  # remains "defaultValue" if not set
-```
-
-### Multiple File Includes
-
-Easily combine multiple files:
-```hocon
-# base.conf
-app.name = "BaseApp"
-include "overrides.conf"
-```
-```hocon
-# overrides.conf
-app.name = "OverriddenApp"
-```
-After parsing `base.conf`, `app.name` ends up **OverriddenApp**.
-
-### Programmatic Overrides
-
-You can pass **overrides** last:
-```js
-const { parseFile } = require('hocon-config');
-
-const config = parseFile('config/base.conf', {
-  overrides: {
-    'database.port': 9999,
-    'app.name': 'HardCodedOverride'
-  }
-});
-```
-No matter what the files say, these overrides take precedence.
+**`parseString(hocon, baseDir)`** is great for inline config or testing.
 
 ---
 
-## Examples
+### **Scenario 6**: Multi-File Includes
 
-**Base & Overrides**:
-
+**File**: `config/s6-base.conf`
 ```hocon
-# config/base.conf
-server.ports = [8080, 9090, 10000]
-feature.enabled = ${?FEATURE_FLAG}
-
-include "overrides.conf"
+app.name = "Scenario6"
+include "s6-overrides.conf"
 ```
 
+**File**: `config/s6-overrides.conf`
 ```hocon
-# config/overrides.conf
+app.name = "OverriddenName"
+```
+**Usage**:
+```js
+const conf = parse(path.join(__dirname, 'config', 's6-base.conf'));
+console.log(conf);
+// => { app: { name: 'OverriddenName' } }
+```
+**Includes** let you spread config across multiple files.
+
+---
+
+### **Scenario 7**: Partial Array Overrides with `[undefined]`
+
+If your overrides set `server.ports = [${?APP_PORT}]`, but `APP_PORT` isn’t set, we skip overwriting:
+
+**File**: `config/s7-base.conf`
+```hocon
+server.ports = [8080, 9090, 10000]
+```
+
+**File**: `config/s7-override.conf`
+```hocon
+include "s7-base.conf"
 server.ports = [${?APP_PORT}]
 ```
 
-Usage:
+**Usage**:
 ```js
-const path = require('path');
-const { parseFile } = require('hocon-config');
+delete process.env.APP_PORT;
+const conf1 = parse('config/s7-override.conf');
+console.log(conf1.server.ports);
+// => [ '8080', '9090', '10000' ] (unchanged)
 
-process.env.APP_PORT = "7777";
-process.env.FEATURE_FLAG = "true";
-
-const configPath = path.join(__dirname, 'config', 'base.conf');
-const finalConfig = parseFile(configPath);
-
-console.log(finalConfig);
-// {
-//   server: { ports: [ '7777', '9090', '10000' ] },
-//   feature: { enabled: 'true' }
-// }
+process.env.APP_PORT = '9999';
+const conf2 = parse('config/s7-override.conf');
+console.log(conf2.server.ports);
+// => [ '9999', '9090', '10000' ]
 ```
+
 ---
 
+### **Scenario 8**: Programmatic Overrides
+
+Sometimes you want **hard-coded** final values no matter what:
+
+```js
+const conf = parse('config/s8.conf', {
+  debug: false, // or true for logs
+  overrides: {
+    'database.host': 'prod-db.internal',
+    'app.enableBeta': true
+  }
+});
+```
+Whatever `s8.conf` says, these keys are **forced** at the end.
+
+---
+
+### **Scenario 9**: Multiple-level includes
+
+**File**: `config/s9-base.conf`
+```hocon
+app {
+  name = "NestedIncludes"
+}
+include "s9-mid.conf"
+```
+**File**: `config/s9-mid.conf`
+```hocon
+app {
+  midKey = true
+}
+include "s9-leaf.conf"
+```
+**File**: `config/s9-leaf.conf`
+```hocon
+app.final = "leaf"
+```
+**Usage**:
+```js
+const conf = parse('config/s9-base.conf');
+console.log(conf);
+// => {
+//   app: {
+//     name: 'NestedIncludes',
+//     midKey: 'true',
+//     final: 'leaf'
+//   }
+// }
+```
+Merges all files in the correct order.
+
+---
+
+### **Scenario 10**: Combining CLI + ENV
+
+Often you want to pass environment variables **and** CLI arguments. For a simple approach, use `parseRuntime(filePath, { parseEnv: true, parseArgs: true })`. But if you prefer the “pure library” approach, do something like:
+
+```js
+process.env.FEATURE_FLAG = 'false';
+const [ , , argPort ] = process.argv;
+const port = argPort || 8080;
+
+const conf = parse('config/cli-env.conf', {
+  overrides: {
+    'server.port': port,                 // from CLI
+    'feature.flag': process.env.FEATURE_FLAG
+  }
+});
+
+console.log(conf);
+```
+Run with:
+```bash
+node index.js 9999
+```
+**Overridden** keys reflect both environment and CLI.  
+
+---
+
+## parseFile and parseString
+
+- **`parseFile(filePath, options?)`**:
+  - Loads a HOCON file (which can include other files).
+  - Merges environment expansions, partial arrays, etc.
+  - Optionally merges **`overrides`**.
+
+- **`parseString(hoconData, baseDir, options?)`**:
+  - Same logic, but from inline text.
+  - Resolves includes relative to `baseDir`.
+
+**`parse`** is simply a convenience calling **`parseFile(filePath, { debug: false })`** by default.
+
+---
 
 ## License
 
