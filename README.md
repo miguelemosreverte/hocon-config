@@ -47,7 +47,7 @@ Once installed, you can simply import or require it in your Node.js code.
    const { parse } = require('hocon-config');
 
    // Suppose we want to read config/base.conf
-   // We'll pass no options => parseEnv=true, parseArgs=true, envPrefix='HOCON_'
+   // We'll pass no options => parseEnv=true, parseArgs=true, envPrefix=''
    const filePath = path.join(__dirname, 'config', 'base.conf');
    const config = parse(filePath);
 
@@ -72,14 +72,14 @@ Once installed, you can simply import or require it in your Node.js code.
  * 2) parseFile(...) with those overrides
  *
  * runtimeOptions:
- *   envPrefix?: string  (default "HOCON_")
+ *   envPrefix?: string  (default "")
  *   parseEnv?: boolean  (default true)
  *   parseArgs?: boolean (default true)
  *   debug?: boolean
  */
 function parse(filePath, runtimeOptions = {}) {
   const {
-    envPrefix = "HOCON_",
+    envPrefix = "",
     parseEnv = true,
     parseArgs = true,
     debug = false,
@@ -108,7 +108,7 @@ function parse(filePath, runtimeOptions = {}) {
 ```
 
 By default:
-- **`envPrefix="HOCON_"`** ensures only environment variables like `HOCON_app_name` → `'app.name'` are considered.  
+- **`envPrefix=""`** ensures only environment variables like `app_name` → `'app.name'` are considered.  
 - **`parseEnv=true`** merges environment variables.  
 - **`parseArgs=true`** merges CLI arguments of the form `--some.dotted.key=value`.  
 - The final config merges these on top of your HOCON file’s contents.
@@ -187,12 +187,11 @@ feature.flag = ${?FEATURE_FLAG}
 ```
 **Code**:
 ```js
-process.env.HOCON_FEATURE_FLAG = 'true'; // Key must start with HOCON_ by default
+process.env.FEATURE_FLAG = 'true';
 const conf = parse('config/s4.conf');
 console.log(conf);
 // => { feature: { flag: 'true' } }
 ```
-**Because** of `envPrefix="HOCON_"` by default, `HOCON_FEATURE_FLAG` becomes `'feature.flag'`.
 
 ---
 
@@ -209,12 +208,12 @@ server.ports = [${?APP_PORT}]
 ```
 **Usage**:
 ```js
-delete process.env.HOCON_APP_PORT;
+delete process.env.APP_PORT;
 const conf1 = parse('config/s5-override.conf');
 console.log(conf1.server.ports);
 // => [ '8080', '9090', '10000' ] (unchanged)
 
-process.env.HOCON_APP_PORT = '9999';
+process.env.APP_PORT = '9999';
 const conf2 = parse('config/s5-override.conf');
 console.log(conf2.server.ports);
 // => [ '9999', '9090', '10000' ]
@@ -237,7 +236,7 @@ node index.js --app.name=MyCLIoverride --server.port=9999
 **Code** (`index.js`):
 ```js
 const conf = parse('config/s6.conf');
-// => merges env vars w/ prefix 'HOCON_' plus CLI
+// => merges env vars w/ prefix '' plus CLI
 console.log(conf);
 // => { app: { name: 'MyCLIoverride' }, server: { port: '9999' } }
 ```
@@ -282,7 +281,7 @@ All merges happen in correct order.
 ### **Scenario 8**: Programmatic Overrides
 
 ```js
-process.env.HOCON_FEATURE_FLAG = 'false';
+process.env.FEATURE_FLAG = 'false';
 const conf = parse('config/s8.conf', {
   // override everything, if we want
   overrides: {
@@ -310,7 +309,7 @@ node index.js --app.debug=true
 ```
 **Code**:
 ```js
-process.env.HOCON_app_name = 'EnvOverride'; 
+process.env.app_name = 'EnvOverride'; 
 const conf = parse('config/s9.conf', {
   overrides: { 'app.logLevel': 'VERBOSE' }
 });
@@ -341,7 +340,7 @@ const hoconData = `
   feature.enabled = ${'?FEATURE_FLAG'}
 `;
 
-process.env.HOCON_FEATURE_FLAG = 'true';
+process.env.FEATURE_FLAG = 'true';
 const inlineConfig = parseString(hoconData, __dirname, { debug: true });
 console.log(inlineConfig);
 // => { server: { port: '3000' }, feature: { enabled: 'true' } }
@@ -364,7 +363,7 @@ node index.js --app.nestedKey=CLIOverride
 ```
 **Code**:
 ```js
-// parse() sees envPrefix 'HOCON_' for env, and parseArgs for CLI
+// parse() sees envPrefix '' for env, and parseArgs for CLI
 const conf = parse('config/s11.conf');
 console.log(conf);
 // => { app: { nestedKey: 'CLIOverride' } }
