@@ -30,6 +30,9 @@
     "nodejs",
     "config-loader"
   ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "devDependencies": {
     "jest": "^29.0.0"
   }
