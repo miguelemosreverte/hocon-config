@@ -1,0 +1,4 @@
+{
+  "description": "Hello\\n  This is multi-line\\n  in triple quotes",
+  "myList": [10, 20, 30]
+}

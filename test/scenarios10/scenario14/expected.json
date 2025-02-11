@@ -1,0 +1,7 @@
+{
+  "someInt": 42,
+  "versionString": "2.0",
+  "value": "42 100",
+  "versionOverride": "2.0",
+  "myList": [10, 20]
+}
