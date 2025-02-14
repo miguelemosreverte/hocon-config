@@ -1,11 +1,13 @@
 {
   "name": "hocon-config",
-  "version": "1.0.93",
+  "version": "1.0.94",
   "description": "A HOCON parser for Node.js with environment expansions, partial array merges, programmatic overrides, and CLI runtime integration.",
   "main": "lib/hoconParser.js",
+  "types": "index.d.ts",
   "files": [
     "lib/",
     "index.js",
+    "index.d.ts",
     "README.md",
     "LICENSE"
   ],
